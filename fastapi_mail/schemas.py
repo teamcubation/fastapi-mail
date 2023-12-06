@@ -3,7 +3,7 @@ from enum import Enum
 from mimetypes import MimeTypes
 from typing import Dict, List, Optional, Union
 
-from pydantic import BaseModel, EmailStr, validator
+from pydantic import field_validator, ConfigDict, BaseModel, EmailStr, validator
 from starlette.datastructures import UploadFile
 
 from fastapi_mail.errors import WrongFile
@@ -42,7 +42,8 @@ class MessageSchema(BaseModel):
     multipart_subtype: MultipartSubtypeEnum = MultipartSubtypeEnum.mixed
     headers: Optional[Dict] = None
 
-    @validator('attachments')
+    @field_validator('attachments')
+    @classmethod
     def validate_file(cls, v):
         temp = []
         mime = MimeTypes()
@@ -71,15 +72,15 @@ class MessageSchema(BaseModel):
                 raise WrongFile('attachments field type incorrect, must be UploadFile or path')
         return temp
 
+    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
     @validator('subtype')
     def validate_subtype(cls, value, values, config, field):
         """Validate subtype field."""
         if values['template_body']:
             return 'html'
         return value
-
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 def validate_path(path):
