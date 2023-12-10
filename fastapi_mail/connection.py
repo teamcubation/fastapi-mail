@@ -1,8 +1,8 @@
 import aiosmtplib
+from pydantic import BaseSettings as Settings
 
 from fastapi_mail.config import ConnectionConfig
 from fastapi_mail.errors import ConnectionErrors, PydanticClassRequired
-from pydantic_settings import BaseSettings
 
 
 class Connection:
